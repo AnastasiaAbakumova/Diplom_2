@@ -11,23 +11,25 @@ def random_email():
 
 @pytest.fixture
 def unique_user():
-    """Создаём уникального пользователя и возвращаем данные"""
-    email = random_email()
-    password = "password"
-    name = "TestUser"
-    response = requests.post(f"{BASE_URL}/auth/register", json={
-        "email": email,
-        "password": password,
-        "name": name
-    })
-    return {"email": email, "password": password, "name": name, "response": response}
+    """Возвращает только данные нового уникального пользователя (без регистрации)"""
+    return {
+        "email": random_email(),
+        "password": "password",
+        "name": "TestUser"
+    }
 
 @pytest.fixture
-def auth_token(unique_user):
+def registered_user(unique_user):
+    """Создаёт пользователя через API и возвращает его данные"""
+    response = requests.post(f"{BASE_URL}/auth/register", json=unique_user)
+    return {**unique_user, "response": response}
+
+@pytest.fixture
+def auth_token(registered_user):
     """Возвращает accessToken зарегистрированного пользователя"""
     resp = requests.post(f"{BASE_URL}/auth/login", json={
-        "email": unique_user["email"],
-        "password": unique_user["password"]
+        "email": registered_user["email"],
+        "password": registered_user["password"]
     })
     return resp.json().get("accessToken")
 

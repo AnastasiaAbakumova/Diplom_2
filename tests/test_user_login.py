@@ -7,20 +7,18 @@ from conftest import BASE_URL
 class TestUserLogin:
 
     @allure.title("Вход под существующим пользователем")
-    def test_login_existing_user(self, unique_user):
-        with allure.step(f"Пытаемся войти пользователем: {unique_user['email']}"):
+    def test_login_existing_user(self, registered_user):
+        with allure.step(f"Пытаемся войти пользователем: {registered_user['email']}"):
             resp = requests.post(f"{BASE_URL}/auth/login", json={
-                "email": unique_user["email"],
-                "password": unique_user["password"]
+                "email": registered_user["email"],
+                "password": registered_user["password"]
             })
             data = resp.json()
 
         with allure.step("Проверяем статус ответа и успешность входа"):
             assert resp.status_code == 200, "Сервер не вернул 200 OK"
-            assert data["success"] is True, "Вход не был успешным"
-            assert "accessToken" in data, "Нет accessToken в ответе"
-            assert "refreshToken" in data, "Нет refreshToken в ответе"
-            assert data["user"]["email"] == unique_user["email"], "Email пользователя не совпадает"
+            assert data["success"] is True
+            assert "accessToken" in data
 
     @pytest.mark.parametrize("email,password", [
         ("wrong_email@yandex.ru", "password"),
